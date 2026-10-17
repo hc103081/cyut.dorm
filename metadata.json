@@ -1,0 +1,6 @@
+{
+  "name": "宿舍點名助手",
+  "description": "專為宿舍幹部打造的快速點名、房號篩選、床位核對與歷史查詢系統",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
