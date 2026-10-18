@@ -118,6 +118,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [logSearch, setLogSearch] = useState<string>('');
   const [logActionFilter, setLogActionFilter] = useState<string>('all');
   const [toastMsg, setToastMsg] = useState<string | null>(null);
+  const [pruneConfirmCount, setPruneConfirmCount] = useState<number | null>(null);
 
   const showToast = (msg: string) => {
     setToastMsg(msg);
@@ -143,14 +144,15 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const estRosterKb = totalResidentsCount * 0.15;
   const estSessionKb = sessionDates.length * 35;
   const estAuditKb = auditLogs.length * 0.5;
-  const estTotalKb = estRosterKb + estSessionKb + estAuditKb + 5;
-  const estTotalMb = (estTotalKb / 1024).toFixed(3);
+  const estTotalKb = estRosterKb + estSessionKb + estAuditKb + 2;
+  const estTotalMb = (estTotalKb / 1024).toFixed(2);
   const freeTierLimitMb = 500;
   const storageUsagePercent = ((parseFloat(estTotalMb) / freeTierLimitMb) * 100).toFixed(3);
+
   // Estimated years remaining at 1 session/day (~35KB/day = ~12.8MB/year)
   const yearsRemaining = ((freeTierLimitMb - parseFloat(estTotalMb)) / 12.8).toFixed(1);
 
-  // Prune old logs handler
+  // Prune old logs handler (In-App Modal confirmation, safe for iframe)
   const handlePruneLogs = () => {
     const ninetyDaysAgo = Date.now() - (90 * 24 * 60 * 60 * 1000);
     const oldLogs = auditLogs.filter(l => l.timestamp < ninetyDaysAgo);
@@ -158,23 +160,28 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       showToast('目前所有異動日誌皆在 90 天內，無須清理！');
       return;
     }
-    if (confirm(`檢測到 ${oldLogs.length} 筆超過 90 天的歷史日誌。確定要清理以維持資料庫輕量嗎？`)) {
-      const remaining = auditLogs.filter(l => l.timestamp >= ninetyDaysAgo);
-      localStorage.setItem('dorm_audit_logs_v2', JSON.stringify(remaining));
-      showToast(`已成功清理 ${oldLogs.length} 筆舊日誌！`);
-      setTimeout(() => window.location.reload(), 800);
-    }
+    setPruneConfirmCount(oldLogs.length);
+  };
+
+  const executePruneLogs = () => {
+    if (!pruneConfirmCount) return;
+    const ninetyDaysAgo = Date.now() - (90 * 24 * 60 * 60 * 1000);
+    const remaining = auditLogs.filter(l => l.timestamp >= ninetyDaysAgo);
+    localStorage.setItem('dorm_audit_logs_v2', JSON.stringify(remaining));
+    showToast(`已成功清理 ${pruneConfirmCount} 筆舊日誌！`);
+    setPruneConfirmCount(null);
+    setTimeout(() => window.location.reload(), 800);
   };
 
   // Save updated passcodes
   const handleSavePasscodes = (e: React.FormEvent) => {
     e.preventDefault();
     if (!cadrePasscode.trim()) {
-      alert('幹部線下通行密碼不能為空！');
+      showToast('⚠️ 幹部線下通行密碼不能為空！');
       return;
     }
     if (!adminPasscode.trim()) {
-      alert('管理員最高密碼不能為空！');
+      showToast('⚠️ 管理員最高密碼不能為空！');
       return;
     }
 
@@ -202,7 +209,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const handleAddCadre = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newCadreName.trim()) {
-      alert('請填寫幹部姓名');
+      showToast('⚠️ 請填寫幹部姓名');
       return;
     }
 
@@ -1411,6 +1418,47 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               >
                 <Trash2 className="w-4 h-4 pointer-events-none" />
                 <span>確定移除</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Prune Logs Confirmation Modal (In-App, Mobile & Iframe Safe) */}
+      {pruneConfirmCount !== null && (
+        <div className="fixed inset-0 z-[100] bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-fade-in">
+          <div className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-3xl p-4 sm:p-5 shadow-2xl text-slate-200 flex flex-col max-h-[90dvh] my-auto overflow-hidden">
+            <div className="shrink-0 flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-2xl bg-amber-600/20 border border-amber-500/40 flex items-center justify-center text-amber-400 shrink-0">
+                <Archive className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="font-bold text-base text-white">確認清理歷史日誌？</h3>
+                <p className="text-xs text-slate-400">釋放資料庫空間以維持極致效能</p>
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto pr-1 space-y-3 text-xs text-slate-300">
+              <p className="bg-slate-950 p-3 rounded-2xl border border-slate-800 leading-relaxed">
+                檢測到 <strong className="text-amber-400 font-mono text-sm">{pruneConfirmCount}</strong> 筆超過 90 天的舊稽核日誌。清理後將釋放本機快取與資料庫空間，90 天內的最新日誌將完整保留。
+              </p>
+            </div>
+
+            <div className="shrink-0 flex items-center justify-end gap-2 pt-3 border-t border-slate-800 mt-3">
+              <button
+                type="button"
+                onClick={() => setPruneConfirmCount(null)}
+                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold cursor-pointer transition-colors"
+              >
+                取消
+              </button>
+              <button
+                type="button"
+                onClick={executePruneLogs}
+                className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-md transition-colors"
+              >
+                <Archive className="w-4 h-4 pointer-events-none" />
+                <span>確定清理舊日誌</span>
               </button>
             </div>
           </div>

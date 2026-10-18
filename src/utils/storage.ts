@@ -36,6 +36,26 @@ export function getRosterVersions(): RosterVersion[] {
     if (raw) {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed) && parsed.length > 0) {
+        // Upgrade check: ensure 4th floor has all 32 rooms (401 ~ 432) from architectural blueprint
+        const fullSample = generateInitialMockResidents();
+        let changed = false;
+        const upgraded = parsed.map((version: RosterVersion) => {
+          const existingIds = new Set(version.residents.map(r => r.id));
+          const missing = fullSample.filter(sr => sr.floor === '4' && !existingIds.has(sr.id));
+          if (missing.length > 0) {
+            changed = true;
+            return {
+              ...version,
+              residents: [...version.residents, ...missing],
+            };
+          }
+          return version;
+        });
+
+        if (changed) {
+          saveRosterVersions(upgraded);
+          return upgraded;
+        }
         return parsed;
       }
     }
@@ -143,7 +163,6 @@ export function updateRosterVersionResidents(versionId: string, residents: Resid
 export function deleteRosterVersion(versionId: string): RosterVersion[] {
   const versions = getRosterVersions();
   if (versions.length <= 1) {
-    alert('系統至少需保留一份人員名單！');
     return versions;
   }
   const updated = versions.filter(v => v.id !== versionId);

@@ -34,6 +34,7 @@ import {
   DoorOpen
 } from 'lucide-react';
 import { ResidentTagBadge } from './ResidentTagBadge.tsx';
+import { FloorPlanLayout } from './FloorPlanLayout.tsx';
 
 interface QueryModeProps {
   residents: Resident[];
@@ -148,7 +149,9 @@ export const QueryMode: React.FC<QueryModeProps> = ({
       setCopyToast(true);
       setTimeout(() => setCopyToast(false), 2000);
     }).catch(() => {
-      alert('複製成功！可直接貼上至 LINE 群組');
+      // Fallback
+      setCopyToast(true);
+      setTimeout(() => setCopyToast(false), 2500);
     });
   };
 
@@ -273,27 +276,29 @@ export const QueryMode: React.FC<QueryModeProps> = ({
               <span>匯出 Excel/CSV</span>
             </button>
 
-            {/* Desktop View Switcher */}
-            <div className="hidden md:flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800">
+            {/* View Switcher (Mobile & Desktop) */}
+            <div className="flex items-center bg-slate-950 p-0.5 rounded-xl border border-slate-800">
               <button
                 onClick={() => setDesktopView('table')}
-                className={`px-3 py-1 text-xs rounded-lg font-medium flex items-center gap-1.5 transition-all ${
+                className={`px-2.5 py-1 text-xs rounded-lg font-bold flex items-center gap-1 transition-all cursor-pointer ${
                   desktopView === 'table' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
                 }`}
-                title="表格清單模式"
+                title="清單列表模式"
               >
                 <TableIcon className="w-3.5 h-3.5" />
-                <span>清單表格</span>
+                <span className="hidden sm:inline">清單表格</span>
+                <span className="sm:hidden">清單</span>
               </button>
               <button
                 onClick={() => setDesktopView('matrix')}
-                className={`px-3 py-1 text-xs rounded-lg font-medium flex items-center gap-1.5 transition-all ${
-                  desktopView === 'matrix' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
+                className={`px-2.5 py-1 text-xs rounded-lg font-bold flex items-center gap-1 transition-all cursor-pointer ${
+                  desktopView === 'matrix' ? 'bg-slate-800 text-emerald-400 shadow-sm' : 'text-slate-400 hover:text-slate-200'
                 }`}
-                title="大螢幕房間平面圖總覽"
+                title="樓層格局平面圖總覽"
               >
                 <LayoutGrid className="w-3.5 h-3.5" />
-                <span>房間平面矩陣</span>
+                <span className="hidden sm:inline">房間平面格局</span>
+                <span className="sm:hidden">格局圖</span>
               </button>
             </div>
           </div>
@@ -534,78 +539,19 @@ export const QueryMode: React.FC<QueryModeProps> = ({
         )}
       </div>
 
-      {/* DESKTOP ROOM MATRIX GRID VIEW (When selected on desktop) */}
+      {/* ARCHITECTURAL ROOM BLUEPRINT VIEW (大螢幕/手機 樓層房間平面格局圖) */}
       {desktopView === 'matrix' && (
-        <div className="hidden md:block bg-slate-900 border border-slate-800 rounded-2xl p-4 mb-4 shadow-sm">
-          <div className="flex items-center justify-between mb-3">
-            <div>
-              <h3 className="font-bold text-sm text-slate-100">
-                {selectedFloor === 'all' ? '全棟房間點名狀態平面圖' : `${selectedFloor} 樓房間平面總覽`}
-              </h3>
-              <p className="text-xs text-slate-400">
-                點擊任一房間卡片可篩選該房學生名冊；圓點代表各床位狀態：🟢 已到 / 🔴 未到 / 🟡 請假 / 🔵 晚歸 / ⚪ 未點
-              </p>
-            </div>
-            <div className="flex items-center gap-3 text-xs text-slate-400">
-              <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>已到</span>
-              <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-rose-500"></span>未到</span>
-              <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>請假</span>
-              <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-sky-500"></span>晚歸</span>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-5 lg:grid-cols-8 xl:grid-cols-10 gap-2.5">
-            {roomsInFloor.map(rm => {
-              const beds = residents.filter(r => r.room === rm);
-              const isSelected = selectedMatrixRoom === rm;
-              const hasAbsent = beds.some(b => session.records[b.id]?.status === 'absent');
-              const isCompleted = session.completedRooms.includes(rm);
-
-              return (
-                <button
-                  key={rm}
-                  onClick={() => setSelectedMatrixRoom(isSelected ? null : rm)}
-                  className={`p-2.5 rounded-xl border text-left transition-all ${
-                    isSelected
-                      ? 'bg-blue-600/30 border-blue-400 ring-2 ring-blue-500/40'
-                      : hasAbsent
-                      ? 'bg-rose-950/40 border-rose-800/80 hover:border-rose-600'
-                      : isCompleted
-                      ? 'bg-slate-900 border-slate-700/80 hover:border-slate-600'
-                      : 'bg-slate-950/60 border-slate-800 hover:border-slate-700'
-                  }`}
-                >
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="font-bold text-sm text-slate-100">{rm}</span>
-                    {hasAbsent && (
-                      <span className="text-[10px] px-1 py-0.2 rounded bg-rose-500/20 text-rose-300 font-bold">
-                        缺
-                      </span>
-                    )}
-                  </div>
-                  {/* Bed status dots */}
-                  <div className="flex items-center gap-1.5">
-                    {beds.map(b => {
-                      const st = session.records[b.id]?.status || 'unmarked';
-                      let color = 'bg-slate-700';
-                      if (st === 'present') color = 'bg-emerald-400';
-                      else if (st === 'absent') color = 'bg-rose-500 animate-pulse';
-                      else if (st === 'leave') color = 'bg-amber-400';
-                      else if (st === 'late') color = 'bg-sky-400';
-
-                      return (
-                        <div
-                          key={b.id}
-                          className={`w-2.5 h-2.5 rounded-full ${color}`}
-                          title={`${b.id} ${b.name}: ${st}`}
-                        />
-                      );
-                    })}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
+        <div className="mb-4">
+          <FloorPlanLayout
+            residents={residents}
+            records={session.records}
+            completedRooms={session.completedRooms}
+            selectedFloor={selectedFloor}
+            onSelectFloor={setSelectedFloor}
+            currentRoom={selectedMatrixRoom || undefined}
+            onSelectRoom={(rm) => setSelectedMatrixRoom(selectedMatrixRoom === rm ? null : rm)}
+            availableFloors={floors}
+          />
         </div>
       )}
 

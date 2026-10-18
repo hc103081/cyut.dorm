@@ -12,8 +12,9 @@ export function generateInitialMockResidents(): Resident[] {
   const residents: Resident[] = [];
   let studentIdCounter = 11527001;
 
-  // 4th Floor: rooms 401 ~ 420 (including 416-2 specified by user)
-  for (let r = 401; r <= 420; r++) {
+  // 4th Floor: all 32 rooms (401 ~ 432) matching architectural blueprint layout
+  for (let num = 1; num <= 32; num++) {
+    const r = 400 + num;
     const room = r.toString();
     for (let b = 1; b <= 4; b++) {
       const bed = b.toString();
@@ -64,8 +65,9 @@ export function generateInitialMockResidents(): Resident[] {
     }
   }
 
-  // 3rd Floor: rooms 301 ~ 315
-  for (let r = 301; r <= 315; r++) {
+  // 3rd Floor: all 32 rooms (301 ~ 332)
+  for (let num = 1; num <= 32; num++) {
+    const r = 300 + num;
     const room = r.toString();
     for (let b = 1; b <= 4; b++) {
       const bed = b.toString();
@@ -85,8 +87,9 @@ export function generateInitialMockResidents(): Resident[] {
     }
   }
 
-  // 2nd Floor: rooms 201 ~ 210
-  for (let r = 201; r <= 210; r++) {
+  // 2nd Floor: all 32 rooms (201 ~ 232)
+  for (let num = 1; num <= 32; num++) {
+    const r = 200 + num;
     const room = r.toString();
     for (let b = 1; b <= 4; b++) {
       const bed = b.toString();

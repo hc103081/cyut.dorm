@@ -161,8 +161,8 @@ export const NetworkStatusBar: React.FC<NetworkStatusBarProps> = ({ onOpenSettin
 
       {/* Network & Supabase Detail Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-fade-in">
-          <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl sm:rounded-3xl shadow-2xl relative text-slate-200 flex flex-col max-h-[88dvh] sm:max-h-[85vh] my-auto overflow-hidden">
+        <div className="fixed inset-0 z-[100] bg-black/85 backdrop-blur-sm flex flex-col justify-end sm:justify-center items-center p-2 sm:p-4 animate-fade-in">
+          <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl relative text-slate-200 flex flex-col max-h-[82dvh] sm:max-h-[85vh] overflow-hidden mb-safe sm:mb-0">
             
             {/* Header (Sticky top) */}
             <div className="shrink-0 p-4 sm:p-5 pb-3 border-b border-slate-800 flex items-center justify-between bg-slate-900">
@@ -334,6 +334,30 @@ export const NetworkStatusBar: React.FC<NetworkStatusBarProps> = ({ onOpenSettin
                 )}
               </div>
 
+              {/* Supabase Free Tier Capacity Discussion */}
+              <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800/80 space-y-2 text-slate-300 leading-relaxed text-[11px]">
+                <div className="font-bold text-slate-200 flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <Database className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Supabase 免費版 (500 MB) 容量討論與說明：</span>
+                  </div>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold">
+                    極度充裕
+                  </span>
+                </div>
+                <div className="space-y-1.5 text-slate-300">
+                  <p>
+                    • <strong>空間評估</strong>：宿舍點名全為純文字結構，全校 180 位住宿生每日點名僅佔約 35 KB，一整學期僅約 <strong>4.2 MB</strong>。Supabase 免費版提供的 <strong>500 MB</strong> 可儲存 <strong>35 年以上</strong>之點名資料，完全無需付費升級！
+                  </p>
+                  <p>
+                    • <strong>7 天無活動防護</strong>：Supabase 免費版專案若連續 7 天無連線（如長假）會進入待機，開學只需在 Supabase 平台點選 Restore 即可喚醒；且巡房期間每天點名會自動維持活躍。
+                  </p>
+                  <p>
+                    • <strong>本機離線安全保證</strong>：系統採用離線優先架構，即使斷網或雲端休眠，手機本機仍可正常進行所有點名、備註與查核，絕不影響幹部巡房作業。
+                  </p>
+                </div>
+              </div>
+
               {/* Behavior explanation */}
               <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 space-y-1.5 text-slate-300 leading-relaxed text-[11px]">
                 <div className="font-bold text-slate-200 flex items-center gap-1">
@@ -356,11 +380,11 @@ export const NetworkStatusBar: React.FC<NetworkStatusBarProps> = ({ onOpenSettin
             </div>
 
             {/* Footer (Always pinned at bottom with pb-safe, 100% accessible on mobile) */}
-            <div className="shrink-0 p-3 sm:p-4 border-t border-slate-800 bg-slate-900/95 backdrop-blur-md flex items-center justify-end gap-2.5 pb-safe">
+            <div className="shrink-0 p-3 sm:p-4 border-t border-slate-800 bg-slate-900/98 backdrop-blur-md flex items-center justify-end gap-2.5 pb-safe z-10">
               <button
                 type="button"
                 onClick={() => setShowModal(false)}
-                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold cursor-pointer transition-colors active:scale-95"
+                className="min-h-[42px] px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold cursor-pointer transition-colors active:scale-95"
               >
                 關閉
               </button>
@@ -369,7 +393,7 @@ export const NetworkStatusBar: React.FC<NetworkStatusBarProps> = ({ onOpenSettin
                 type="button"
                 onClick={handleManualSync}
                 disabled={isSyncing}
-                className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-md cursor-pointer disabled:opacity-50 transition-colors active:scale-95"
+                className="min-h-[42px] px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-md cursor-pointer disabled:opacity-50 transition-colors active:scale-95"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
                 <span>{isSyncing ? '同步中...' : '手動重試立即同步'}</span>

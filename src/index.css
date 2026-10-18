@@ -134,3 +134,12 @@
 .animate-card-stagger-4 {
   animation: cardStagger 0.25s cubic-bezier(0.16, 1, 0.3, 1) 0.15s forwards both;
 }
+
+/* Safe area padding utilities for mobile Safari, Android & embedded iframes */
+.pb-safe {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom, 1rem));
+}
+
+.mb-safe {
+  margin-bottom: max(1rem, env(safe-area-inset-bottom, 1rem));
+}
